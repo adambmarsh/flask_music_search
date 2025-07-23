@@ -1,0 +1,29 @@
+# To run music-search as a service that starts automatically on boot:
+#
+# 1. Modify WorkingDirectory and ExecStart to show the working directory and the location of music-search.sh,
+#    respectively, as appropriate for the system on which the service is to run.
+# 2. Copy this file to /etc/systemd/system/
+# 3. Start the service:
+#    `sudo systemctl start music-search.service`
+# 4. Enable the service (to make it start automatically when the host machine boots):
+#    `sudo systemctl enable music-search.service`
+# 5. To check the status of the service, run:
+#    `sudo systemctl status music-search.service`
+
+[Unit]
+Description=Gunicorn instance to serve Flask App
+After=network.target
+
+[Service]
+User=pi
+Group=pi
+WorkingDirectory=/home/pi/scripts/flask_music_search
+# Environment="PATH=/home/pi/flask_music_search/.venv/bin"
+ExecStart=/home/pi/scripts/flask_music_search/music-search.sh
+# ExecReload=/bin/kill -s HUP $MANPID
+# KillMode=mixed
+TimeoutStopSec=6
+Restart=always
+
+[Install]
+WantedBy=multi-user.target

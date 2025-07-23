@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <style>
+        .in_field {
+            margin-top: 5px;
+        }
+
+        .in_tables {
+            width: 300px;
+        }
+
+        .in_columns {
+            width: 300px;
+        }
+
+        .in_query {
+            width: 300px;
+        }
+
+
+        label {
+          color: green;
+          font-weight: bold;
+          width: 85px;
+          float: left;
+        }
+        label:after { content: " " }
+
+    </style>
+    <title>Music Search (RPi-171)</title>
+    <script>
+        function loadDoc(url, cFunction) {
+        var xhttp;
+          xhttp=new XMLHttpRequest();
+          xhttp.onreadystatechange = function() {
+            if (this.readyState == 4 && this.status == 200) {
+              cFunction(this);
+            }
+          };
+
+          var data = JSON.stringify({"query": document.getElementById("query").value,
+          'tables': document.getElementById("tables").value,
+          'columns':document.getElementById("columns").value});
+          xhttp.open("POST", url, true);
+          xhttp.setRequestHeader("Content-Type", "application/json");
+          xhttp.send(data);
+        }
+        function myFunction(xhttp) {
+           const clean_response = xhttp.response.replace(/[\n ]/,'');
+           const json_response = JSON.parse(clean_response);
+          document.getElementById("output").innerHTML = json_response.html;
+          const result_elements = document.getElementsByTagName("mark");
+          for (let each of result_elements){
+            each.style.color="red";
+          }
+        }
+        function PreventEnter(event){s
+        if(event.keyCode === 13) {
+        event.preventDefault();
+        document.getElementById("button").click();
+        return false;}
+        }
+
+    </script>
+</head>
+<body>
+  <form id ="form" onkeydown="PreventEnter(event)">
+      <label>Search for</label>
+      <input class="in_query" type="text" id="query" placeholder="Text to find" />
+    <br/>
+      <label>Table(s)</label>
+      <input class="in_tables" type="text" id="tables" placeholder="Comma-separated table names, empty means all" />
+    <br/>
+      <label>Column(s)</label>
+      <input class="in_columns" type="text" id="columns" placeholder="Comma-separated column names, empty means all" />
+    <br/>
+      <label>&nbsp;</label>
+      <input id = "button" type ="button" value="Send" onclick="loadDoc('/form', myFunction)"/>
+  </form>
+  <p id="output"></p>
+</body>
+</html>
