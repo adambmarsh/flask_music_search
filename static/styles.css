@@ -1,14 +1,26 @@
-table, th, td {
-        border: 1px solid black;
-        border-collapse: collapse;
-        }
-         div.cell-content{
-max-height: 50px;
-overflow-y: auto;
+table,
+th,
+td {
+    border: 1px solid black;
+    border-collapse: collapse;
+
 }
 td{
-vertical-align: top;
+    width: max-content;
 }
+div.cell-content {
+    /* max-height: 50px; */
+    overflow-y: auto;
+}
+
+div.cell-content {
+    word-wrap: break-word;
+}
+
+td {
+    vertical-align: top;
+}
+
 .in_field {
     margin-top: 5px;
 }
@@ -27,9 +39,12 @@ vertical-align: top;
 
 
 label {
-  color: green;
-  font-weight: bold;
-  width: 85px;
-  float: left;
+    color: green;
+    font-weight: bold;
+    width: 85px;
+    float: left;
 }
-label:after { content: " " }
+
+label:after {
+    content: " "
+}
