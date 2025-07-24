@@ -9,32 +9,63 @@
     function checkDuplicates() {
       let table = document.querySelector('#table');
       let rowCount = table.rows.length;
-      let colCount = table.rows[0].length;
+      let colCount = table.rows[0].cells.length;
 
       let isRowSpan = false;
       let startCell;
       let spanSize;
+      let deletes = [];
 
-      for (let colNo = 0; colNo < colCount; colNo++){
-        for (let rowNo = 1; rowNo < rowCount; rowNo++){
-            let thisCell = table.rows[rowNo].cells[colNo];
-            let prevCell = table.rows[rowNo-1].cells[colNo];
-            if(thisCell.textContent === prevCell.textContent){
-                if(!isRowSpan){
-                startCell = prevCell;
-                }
-                else{
-                    spanSize++;
-                }
-                isRowSpan = true;
+      for (let colNo = 0; colNo < colCount; colNo++) {
+
+
+        for (let rowNo = 1; rowNo < rowCount; rowNo++) {
+          let thisCell = table.rows[rowNo].cells[colNo];
+          if (thisCell === undefined) {
+            console.log("Error: cell undefined");
+          }
+          let prevCell = table.rows[rowNo - 1].cells[colNo];
+          if (thisCell.textContent === prevCell.textContent) {
+            if (!isRowSpan) {
+              startCell = prevCell;
+              spanSize = 2;
             }
-            else{
-                isRowSpan = false;
-                startCell.rowSpan = spanSize;
-                spanSize = 0;
+            else {
+              spanSize++;
             }
+            deletes.push([rowNo, colNo])
+            isRowSpan = true;
+          }
+          else {
+            if (isRowSpan === true) {
+              isRowSpan = false;
+              startCell.rowSpan = spanSize;
+              spanSize = 0;
+            }
+          }
         }
+      }
+      deletes.sort((a, b) => {
+    // First, compare by row index (descending)
+    // If b.row is greater than a.row, b comes before a
+    if (a[0] !== b[0]) { // a[0] is row, b[0] is row
+        return b[0] - a[0];
     }
+    // If row indices are equal, then compare by column index (descending)
+    // If b.col is greater than a.col, b comes before a
+    return b[1] - a[1]; // a[1] is col, b[1] is col
+});
+      if(deletes.length > 0){
+          for (i = 0; i < deletes.length; i++){
+            try{
+            table.rows[deletes[i][0]].deleteCell(deletes[i][1]);
+            }
+            catch(err){
+              console.log(err.message);
+            }
+          }
+        deletes = [];
+      }
     }
     function loadDoc(url, cFunction) {
       var xhttp;
