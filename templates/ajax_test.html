@@ -6,7 +6,36 @@
   <link rel="stylesheet" href="{{url_for('static', filename='styles.css')}}">
   <title>Music Search</title>
   <script>
+    function checkDuplicates() {
+      let table = document.querySelector('#table');
+      let rowCount = table.rows.length;
+      let colCount = table.rows[0].length;
 
+      let isRowSpan = false;
+      let startCell;
+      let spanSize;
+
+      for (let colNo = 0; colNo < colCount; colNo++){
+        for (let rowNo = 1; rowNo < rowCount; rowNo++){
+            let thisCell = table.rows[rowNo].cells[colNo];
+            let prevCell = table.rows[rowNo-1].cells[colNo];
+            if(thisCell.textContent === prevCell.textContent){
+                if(!isRowSpan){
+                startCell = prevCell;
+                }
+                else{
+                    spanSize++;
+                }
+                isRowSpan = true;
+            }
+            else{
+                isRowSpan = false;
+                startCell.rowSpan = spanSize;
+                spanSize = 0;
+            }
+        }
+    }
+    }
     function loadDoc(url, cFunction) {
       var xhttp;
       xhttp = new XMLHttpRequest();
@@ -33,6 +62,7 @@
       for (let each of result_elements) {
         each.style.color = "red";
       }
+      checkDuplicates();
 
     }
     function PreventEnter(event) {
