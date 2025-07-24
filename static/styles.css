@@ -1,0 +1,35 @@
+table, th, td {
+        border: 1px solid black;
+        border-collapse: collapse;
+        }
+         div.cell-content{
+max-height: 50px;
+overflow-y: auto;
+}
+td{
+vertical-align: top;
+}
+.in_field {
+    margin-top: 5px;
+}
+
+.in_tables {
+    width: 300px;
+}
+
+.in_columns {
+    width: 300px;
+}
+
+.in_query {
+    width: 300px;
+}
+
+
+label {
+  color: green;
+  font-weight: bold;
+  width: 85px;
+  float: left;
+}
+label:after { content: " " }
