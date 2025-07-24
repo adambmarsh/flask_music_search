@@ -19,7 +19,7 @@ def build_html(columns, data, term):
         return html_string
 
     column_str = ''.join([f'<th style="text-align:left">{col}</th>' for col in columns])
-    html_string += f"<table><tr>{column_str}</tr>"
+    html_string += f"<table id=\"table\"><tr>{column_str}</tr>"
 
     for row in data:
         html_string += '<tr>'
