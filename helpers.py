@@ -25,7 +25,7 @@ def build_html(columns, data, term):
         html_string += '<tr>'
 
         for entry in row:
-            entry_string = f'<td style="text-align:left">{entry}</td>'
+            entry_string = f'<td style="text-align:left"><div class="cell-content">{entry}</div></td>'
 
             if term in str(entry):
                 entry_string = replace_matches(term, entry_string)
