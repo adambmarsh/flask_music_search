@@ -51,6 +51,10 @@ def form():
 
     return jsonify({'html': build_html(db_conn.current_schema, out_data, q)})
 
+@app.route('/stream/<filename>',methods=['POST'])
+def stream(filename):
+    pass
+
 
 if __name__ == '__main__':
     app.run(debug=True, host='0.0.0.0')

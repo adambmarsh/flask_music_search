@@ -67,3 +67,4 @@ target/
 pylintrc
 README.html
 uv.lock
+.ftp_connect.yml
