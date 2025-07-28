@@ -6,6 +6,12 @@
   <link rel="stylesheet" href="{{url_for('static', filename='styles.css')}}">
   <title>Music Search</title>
   <script>
+    function setPlayer(target){
+      let uri = "stream/"+target;
+      if(document.getElementById('player').src != uri){
+        document.getElementById('player').src = uri;
+      }
+    }
     function checkDuplicates() {
       let table = document.querySelector('#table');
       let rowCount = table.rows.length;
@@ -16,7 +22,8 @@
       let spanSize;
       let deletes = [];
 
-      for (let colNo = 0; colNo < colCount; colNo++) {
+      // skip the first column because it contains play buttons
+      for (let colNo = 1; colNo < colCount; colNo++) {
 
 
         for (let rowNo = 1; rowNo < rowCount; rowNo++) {
@@ -108,6 +115,7 @@
 </head>
 
 <body>
+<div class="top-display">
   <form id="form" onkeydown="PreventEnter(event)">
     <label>Search for</label>
     <input class="in_query" type="text" id="query" placeholder="Text to find or regular expression" />
@@ -121,6 +129,8 @@
     <label>&nbsp;</label>
     <input id="button" type="button" value="Send" onclick="loadDoc('/form', myFunction)" />
   </form>
+  <audio id = "player" controls src=""></audio>
+</div>
   <div id="output"></div>
 </body>
 

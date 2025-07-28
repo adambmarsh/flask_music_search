@@ -8,6 +8,11 @@ td {
 td{
     width: max-content;
 }
+.top-display{
+ position: sticky;
+  top: 0;
+  background-color: gray;
+}
 div.cell-content {
     /* max-height: 50px; */
     overflow-y: auto;

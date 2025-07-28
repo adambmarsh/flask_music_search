@@ -68,3 +68,4 @@ pylintrc
 README.html
 uv.lock
 .ftp_connect.yml
+ftp_connect.py
