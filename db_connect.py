@@ -2,7 +2,7 @@
 module: db_connector
 """
 import re
-import socket
+# import socket
 from collections import OrderedDict
 import psycopg2
 from settings import DATABASES
@@ -109,6 +109,22 @@ class DBConnection:
 
         return tables, where_columns
 
+    @staticmethod
+    def is_re_pattern(in_str):
+        """
+        Check if the received string is a valid regex pattern and not just piece of ordinary text.
+        :param in_str: String to test
+        :return: True if the string is a regex pattern, otherwise False
+        """
+        if re.fullmatch(r'[\w ]+', in_str):
+            return False
+
+        try:
+            re.compile(in_str)
+            return True
+        except re.error:
+            return False
+
     def search(self, user_query, table, columns='*'):
         """
         Run a db search.
@@ -117,6 +133,13 @@ class DBConnection:
         :param columns: The name of the column to search, if None, use all columns (retrieve from schema)
         :return: Results of the search
         """
+        where_operand = 'LIKE'
+        pc_sign = '%'
+
+        if user_query and self.is_re_pattern(user_query):
+            where_operand = '~'
+            pc_sign = ''
+
         where_tables, where_cols = self.resolve_tables_and_columns(table, columns or '*')
         where_col_str = '::TEXT||'.join(where_cols) + '::TEXT'
 
@@ -125,7 +148,8 @@ class DBConnection:
             self.current_schema = list(db_tables.get(use_table))
             select_col_str = ", ".join(self.current_schema)
             query_str = \
-                f"SELECT {select_col_str} FROM {use_table} WHERE {where_col_str} LIKE \'%{user_query}%\';"
+                f"SELECT {select_col_str} FROM {use_table} WHERE {where_col_str}" + \
+                f"{where_operand} \'{pc_sign}{user_query}{pc_sign}\';"
         else:
             # Construct a PSQL JOIN like this:
             #  "SELECT album.title, album.artist, album.date, song.title, song.track_id,
@@ -135,7 +159,7 @@ class DBConnection:
             select_col_str = ", ".join(self.current_schema)
             query_str = (f"SELECT {select_col_str} FROM {where_tables[0]} JOIN {where_tables[1]} on " +
                          f"{where_tables[1]}.album_id = {where_tables[0]}.id WHERE " +
-                         f"{where_col_str} LIKE \'%{user_query}%\';")
+                         f"{where_col_str} {where_operand} \'{pc_sign}{user_query}{pc_sign}\';")
 
         self.cur.execute(query_str)
 
