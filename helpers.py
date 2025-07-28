@@ -2,7 +2,7 @@
 module defining help functions for flask-based db search
 """
 import re
-
+import urllib.parse
 
 def build_html(columns, data, term):
     """
@@ -18,11 +18,15 @@ def build_html(columns, data, term):
     if not data:
         return html_string
 
-    column_str = ''.join([f'<th style="text-align:left">{col}</th>' for col in columns])
+    column_str = ''.join(["<th style=\"text-align:left\">Play Song</th>"]+
+                         [f'<th style="text-align:left">{col}</th>' for col in columns])
     html_string += f"<table id=\"table\"><tr>{column_str}</tr>"
 
     for row in data:
-        html_string += '<tr>'
+        seek_path = row[5]+'/'+row[15]
+        seek_path = urllib.parse.quote(seek_path)
+        html_string += f"""<tr>
+                        <td><input type = "button" value="Play track" onclick="setPlayer('{seek_path}')"/></td>"""
 
         for entry in row:
             entry_string = f'<td style="text-align:left"><div class="cell-content">{entry}</div></td>'
