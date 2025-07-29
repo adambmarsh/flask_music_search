@@ -63,4 +63,6 @@ if [ -z "$port" ]; then
     port="5000"
 fi
 
+"$HOME"/scripts/mount_music
+
 . "$activate_path" && cd "$run_dir" && gunicorn --workers 2 --bind "$ip":"$port" app:app && deactivate
