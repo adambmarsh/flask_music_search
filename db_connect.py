@@ -159,7 +159,8 @@ class DBConnection:
             select_col_str = ", ".join(self.current_schema)
             query_str = (f"SELECT {select_col_str} FROM {where_tables[0]} JOIN {where_tables[1]} on " +
                          f"{where_tables[1]}.album_id = {where_tables[0]}.id WHERE " +
-                         f"{where_col_str} {where_operand} \'{pc_sign}{user_query}{pc_sign}\';")
+                         f"{where_col_str} {where_operand} \'{pc_sign}{user_query}{pc_sign}\'"+
+                         "ORDER BY album.title DESC, song.track_id;")
 
         self.cur.execute(query_str)
 
