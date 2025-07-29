@@ -6,8 +6,9 @@
   <link rel="stylesheet" href="{{url_for('static', filename='styles.css')}}">
   <title>Music Search</title>
   <script>
-    function setPlayer(target){
-      let uri = "stream/"+target;
+    function setPlayer(directoryPath,fileName){
+      let uri = `stream?dir=${directoryPath}&fname=${fileName}`;
+
       if(document.getElementById('player').src != uri){
         document.getElementById('player').src = uri;
       }

@@ -53,13 +53,17 @@ def form():
 
     return jsonify({'html': build_html(db_conn.current_schema, out_data, q)})
 
-@app.route('/stream/<directory>/<filename>',methods=['GET'])
-def stream(directory, filename):
+@app.route('/stream',methods=['GET'])
+def stream():
     """
         Streams an audio file from the configured directory to the browser client.
         This function is designed to handle HTTP 'Range' requests, which are essential
         for features like seeking (fast-forward/rewind) and resuming playback in audio players.
         """
+    directory = request.args.get('dir')
+    filename = request.args.get('fname')
+    if not directory or not filename:
+        return "No file path data provided..."
     audio_dir = os.path.expanduser("~/lanmount/music/"+f"{directory}")
     filepath = os.path.join(audio_dir, filename)
 
