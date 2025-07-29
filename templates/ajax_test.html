@@ -8,10 +8,14 @@
   <script>
     function setPlayer(directoryPath,fileName){
       let uri = `stream?dir=${directoryPath}&fname=${fileName}`;
-
-      if(document.getElementById('player').src != uri){
-        document.getElementById('player').src = uri;
+      let player = document.getElementById('player');
+      if(player.src != uri){
+        player.src = uri;
       }
+      let listener = (event) => {player.play();
+        player.removeEventListener("canplay",listener);
+      }
+      player.addEventListener("canplay", listener)
     }
     function checkDuplicates() {
       let table = document.querySelector('#table');

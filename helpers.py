@@ -17,9 +17,10 @@ def build_html(columns, data, term):
 
     if not data:
         return html_string
+    display_cols = ["album.title","album.artist","album.date","song.title","song.artist","song.genre","song.track_id"]
 
     column_str = ''.join(["<th style=\"text-align:left\">Play Song</th>"]+
-                         [f'<th style="text-align:left">{col}</th>' for col in columns])
+                         [f'<th style="text-align:left">{col}</th>' for col in columns if col in display_cols])
     html_string += f"<table id=\"table\"><tr>{column_str}</tr>"
 
     for row in data:
@@ -28,8 +29,9 @@ def build_html(columns, data, term):
         html_string += f"""<tr>
                         <td><input type = "button" value="Play track" onclick="setPlayer('{d["folder_path"]}',
                         '{d["file_name"]}')"/></td>"""
-
-        for entry in row:
+        row_data_dict = dict(zip(columns,list(row)))
+        row_data_dict = {k: v for k,v in row_data_dict.items() if k in display_cols}
+        for entry in row_data_dict.values():
             entry_string = f'<td style="text-align:left"><div class="cell-content">{entry}</div></td>'
 
             if term in str(entry):
