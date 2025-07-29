@@ -23,10 +23,11 @@ def build_html(columns, data, term):
     html_string += f"<table id=\"table\"><tr>{column_str}</tr>"
 
     for row in data:
-        seek_path = row[5]+'/'+row[15]
-        seek_path = urllib.parse.quote(seek_path)
+        d = {"folder_path": row[5],"file_name": row[15]}
+        d = {k: urllib.parse.quote(v) for k,v in d.items()}
         html_string += f"""<tr>
-                        <td><input type = "button" value="Play track" onclick="setPlayer('{seek_path}')"/></td>"""
+                        <td><input type = "button" value="Play track" onclick="setPlayer('{d["folder_path"]}',
+                        '{d["file_name"]}')"/></td>"""
 
         for entry in row:
             entry_string = f'<td style="text-align:left"><div class="cell-content">{entry}</div></td>'
