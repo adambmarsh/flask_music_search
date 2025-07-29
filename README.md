@@ -52,9 +52,8 @@ The project thus far has offered good scope for experimenting with:
 ### To-do List
 
 - Improve the Web GUI -- presentation in the first iteration is very basic, the album comments and other repeated information is to be shown once per album
-- Support regex-based searches
-- Play/stream selected song or album
 - Allow for selecting songs and/or albums to create an XSPF playlist (compatible with VLC)
+- Try to make the search DB lay-out agnostic as far as possible -- DB lay-out could be read in from config, for example 
 
 
 
