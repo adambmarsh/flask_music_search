@@ -53,13 +53,14 @@ def form():
 
     return jsonify({'html': build_html(db_conn.current_schema, out_data, q)})
 
+
 @app.route('/stream',methods=['GET'])
 def stream():
     """
         Streams an audio file from the configured directory to the browser client.
         This function is designed to handle HTTP 'Range' requests, which are essential
         for features like seeking (fast-forward/rewind) and resuming playback in audio players.
-        """
+    """
     directory = request.args.get('dir')
     filename = request.args.get('fname')
     if not directory or not filename:
@@ -93,72 +94,63 @@ def stream():
         # "bytes=1024-" (from byte 1024 to the end)
         # "bytes=-500" (last 500 bytes)
 
-        try:
-            # Extract the byte range string (e.g., "0-1023" or "1024-")
-            byte_range_str = range_header.split('=')[1]
+        # Extract the byte range string (e.g., "0-1023" or "1024-")
+        byte_range_str = range_header.split('=')[1]
 
-            # Initialize start and end bytes. Default to the full file if parts are missing.
-            start_byte, end_byte = 0, file_size - 1
+        # Initialize start and end bytes. Default to the full file if parts are missing.
+        start_byte, end_byte = 0, file_size - 1
 
-            # Parse the start and end bytes from the range string
-            parts = byte_range_str.split('-')
-            if parts[0]:
-                start_byte = int(parts[0])
-            if parts[1]:
-                end_byte = int(parts[1])
-            else:
-                # If "bytes=START-" format, stream from START to the end of the file
-                end_byte = file_size - 1
+        # Parse the start and end bytes from the range string
+        parts = byte_range_str.split('-')
+        start_byte = int(parts[0]) if parts[0] else 0
+        end_byte = int(parts[1]) if parts[1] else file_size - 1
 
-            # Validate the requested range to ensure it's within the file's bounds and makes sense.
-            if start_byte >= file_size or start_byte > end_byte:
-                # Return 416 Range Not Satisfiable if the range is invalid.
-                return "Range Not Satisfiable", 416, {'Content-Range': f'bytes */{file_size}'}
+        # Validate the requested range to ensure it's within the file's bounds and makes sense.
+        if start_byte >= file_size or start_byte > end_byte:
+            # Return 416 Range Not Satisfiable if the range is invalid.
+            return "Range Not Satisfiable", 416, {'Content-Range': f'bytes */{file_size}'}
 
-            # Calculate the length of the requested chunk.
-            length = end_byte - start_byte + 1
+        # Calculate the length of the requested chunk.
+        length = end_byte - start_byte + 1
 
-            # Define a generator function to read the file in small chunks.
-            # This is efficient as it doesn't load the entire file into memory at once.
-            def generate_chunks():
-                with open(filepath, 'rb') as f:
-                    f.seek(start_byte)  # Move the file pointer to the start of the requested range
-                    remaining_bytes = length
-                    chunk_size = 8192  # Define a suitable chunk size (e.g., 8KB) for streaming
+        # Define a generator function to read the file in small chunks.
+        # This is efficient as it doesn't load the entire file into memory at once.
+        def generate_chunks():
+            with open(filepath, 'rb') as f:
+                f.seek(start_byte)  # Move the file pointer to the start of the requested range
+                remaining_bytes = length
+                chunk_size = 8192  # Define a suitable chunk size (e.g., 8KB) for streaming
 
-                    while remaining_bytes > 0:
-                        # Read a chunk, ensuring we don't read more than 'remaining_bytes'
-                        chunk = f.read(min(chunk_size, remaining_bytes))
-                        if not chunk:  # Break if end of file is reached prematurely
-                            break
-                        yield chunk  # Yield the chunk to the response stream
-                        remaining_bytes -= len(chunk)  # Update remaining bytes
+                while remaining_bytes > 0:
+                    # Read a chunk, ensuring we don't read more than 'remaining_bytes'
+                    chunk = f.read(min(chunk_size, remaining_bytes))
+                    if not chunk:  # Break if end of file is reached prematurely
+                        break
+                    yield chunk  # Yield the chunk to the response stream
+                    remaining_bytes -= len(chunk)  # Update remaining bytes
 
-            # Create a Flask Response object for partial content.
-            # Status code 206 indicates Partial Content.
-            response = Response(generate_chunks(), 206)
+        # Create a Flask Response object for partial content.
+        # Status code 206 indicates Partial Content.
+        response = Response(generate_chunks(), 206)
 
-            # Set crucial HTTP headers for partial content streaming:
-            response.headers.set('Content-Type', mime_type)  # The MIME type of the audio
-            response.headers.set('Content-Length', str(length))  # The size of the *partial* content
-            response.headers.set('Content-Range',
-                                 f'bytes {start_byte}-{end_byte}/{file_size}')  # The byte range being sent
-            response.headers.set('Accept-Ranges', 'bytes')  # Inform the client that the server supports byte ranges
+        # Set crucial HTTP headers for partial content streaming:
+        response.headers.set('Content-Type', mime_type)  # The MIME type of the audio
+        response.headers.set('Content-Length', str(length))  # The size of the *partial* content
+        response.headers.set('Content-Range',
+                             f'bytes {start_byte}-{end_byte}/{file_size}')  # The byte range being sent
+        response.headers.set('Accept-Ranges', 'bytes')  # Inform the client that the server supports byte ranges
 
-            return response
-        except:
-            return "Streaming error"
+        return response
 
-    else:
-        # --- Handle Full Content Requests ---
-        # If no 'Range' header is present, the client is requesting the entire file.
-        # Use Flask's send_from_directory for efficient serving of the full file.
-        return send_from_directory(
-            audio_dir,
-            filename,
-            mimetype=mime_type,
-            as_attachment=False  # 'False' means display/play in the browser; 'True' forces a download dialog.
-        )
+    # --- Handle Full Content Requests ---
+    # If no 'Range' header is present, the client is requesting the entire file.
+    # Use Flask's send_from_directory for efficient serving of the full file.
+    return send_from_directory(
+        audio_dir,
+        filename,
+        mimetype=mime_type,
+        as_attachment=False  # 'False' means display/play in the browser; 'True' forces a download dialog.
+    )
 
 
 if __name__ == '__main__':
