@@ -85,7 +85,6 @@ function loadDoc(url, cFunction) {
 
       var data = JSON.stringify({
         "query": document.getElementById("query").value,
-        'tables': document.getElementById("tables").value,
         'columns': document.getElementById("columns").value
       });
       xhttp.open("POST", url, true);
