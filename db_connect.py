@@ -2,40 +2,9 @@
 module: db_connector
 """
 import re
-# import socket
 from collections import OrderedDict
 import psycopg2
 from settings import DATABASES
-
-
-album_columns = [
-    'title',
-    'artist',
-    'date',
-    'label',
-    'comment',
-    'path'
-]
-
-
-song_columns = [
-    'title',
-    'track_id',
-    'artist',
-    'composer',
-    'performer',
-    'album_id',  # use to get album title
-    'genre',
-    'date',
-    'comment',
-    'file'
-]
-
-
-db_tables = OrderedDict({
-    'album': album_columns,
-    'song': song_columns
-})
 
 
 class DBConnection:
@@ -43,6 +12,7 @@ class DBConnection:
     Class handling the database connection and retrieval of data.
     """
     def __init__(self):
+        self._db_tables = {}
         self._current_schema = None
         db_info = DATABASES.get('default', {})
         self.conn = psycopg2.connect(database=db_info.get("NAME"),
@@ -51,6 +21,8 @@ class DBConnection:
                                      host=db_info.get("HOST"),
                                      port=db_info.get("PORT"))
         self.cur = self.conn.cursor()
+        self.db_tables = OrderedDict({t: self._get_table_schema(t) for t in self._get_db_tables()}
+)
         self.current_schema = []
 
     @property
@@ -61,6 +33,39 @@ class DBConnection:
     def current_schema(self, in_schema):
         self._current_schema = in_schema
 
+    @property
+    def db_tables(self):  # pylint: disable=missing-function-docstring
+        return self._db_tables
+
+    @db_tables.setter
+    def db_tables(self, in_tables):
+        self._db_tables = in_tables
+
+    def _get_db_tables(self, schema_id='public'):
+        """
+        Query the database to get a list of tables for the specified schema
+        :param schema_id: Identifier of the db schema for which to retrieve table names
+        :return: a list of table names
+        """
+        self.cur.execute(
+            f"SELECT table_schema,table_name FROM information_schema.tables WHERE tables.table_schema='{schema_id}'")
+
+        query_results = self.cur.fetchall()
+
+        return list(filter(lambda x: x not in ['django_migrations', 'combiview'], [x[1] for x in query_results]))
+
+    def _get_table_schema(self, table):
+        """
+        Get the schema (columns from the given table).
+        :param table: Name of the table
+        :return: A list of column names
+        """
+        self.cur.execute(
+            f"SELECT column_name, data_type FROM information_schema.columns WHERE table_name = '{table}';")
+
+        query_results = self.cur.fetchall()
+        return [x[0] for x in query_results if x[0] != 'id']
+
     def close(self):
         """
         Close db
@@ -68,44 +73,42 @@ class DBConnection:
         """
         self.conn.close()
 
-    def get_schema(self, table):
+    def resolve_tables(self, in_tables=None):
         """
-        Get the schema (columns from the given table).
-        :param table: Name of the table
-        :return: A list of column names
+        Get table names from supplied string and verify then against the db
+        :param in_tables: A string containing comma-separated table names to use or empty string
+        :return: A list of verified table names
         """
-        if self.current_schema:
-            return self.current_schema
+        if not in_tables or in_tables == '*':
+            return list(self.db_tables.keys())
 
-        self.cur.execute(
-            f"SELECT column_name, data_type FROM information_schema.columns WHERE table_name = '{table}';")
+        return [tbl for tbl in list(self.db_tables.keys()) if tbl in re.split(r', *', in_tables)]
 
-        query_results = self.cur.fetchall()
-        return [x[0] for x in query_results]
+    def resolve_columns(self, tables, in_columns=None):
+        """
+        Get column names for named table and verify them against the db
+        :param tables: A list naming tables for which to verify columns
+        :param in_columns: A string containing comma-separated table column names or '*'/None for all
+        :return: A list of verified column names
+        """
+        out_columns = []
+        for tbl in tables:
+            if not in_columns or in_columns == '*':
+                out_columns += [f"{tbl}.{col}" for col in self.db_tables.get(tbl, [])]
+            else:
+                out_columns += [f"{tbl}.{col}" for col in self.db_tables.get(tbl, []) if col in in_columns]
 
-    @staticmethod
-    def resolve_tables(in_str=None):   # pylint: disable=missing-function-docstring
-        if not in_str or in_str == '*':
-            return list(db_tables.keys())
+        return out_columns
 
-        return [tbl for tbl in list(db_tables.keys()) if tbl in re.split(r', *', in_str)]
-
-    def resolve_tables_and_columns(self, table_names, columns=None):
+    def resolve_tables_and_columns(self, table_names='*', columns='*'):
         """
         Get strings with the names of the tables and columns to search.
         :param table_names: Names of the DB tables or '*' or None for all
         :param columns: Name(s) of column(s); if not supplied (None), use all column names
         :return: Strings, one with resolved table names, one with column names
         """
-        self.current_schema = self.get_schema(table_names)
         tables = self.resolve_tables(table_names)
-
-        where_columns = []
-        for tbl in tables:
-            if columns == '*':
-                where_columns += [f"{tbl}.{col}" for col in db_tables.get(tbl, [])]
-            else:
-                where_columns += [f"{tbl}.{col}" for col in db_tables.get(tbl, []) if col in columns]
+        where_columns = self.resolve_columns(tables, columns)
 
         return tables, where_columns
 
@@ -125,12 +128,12 @@ class DBConnection:
         except re.error:
             return False
 
-    def search(self, user_query, table, columns='*'):
+    def search(self, user_query, tables='*', columns='*'):
         """
         Run a db search.
         :param user_query: Text containing the search terms
-        :param table: The name of the DB table
-        :param columns: The name of the column to search, if None, use all columns (retrieve from schema)
+        :param tables: Names of DB tables to search, a comma-separated string, if None or '*', search all
+        :param columns: DB columns to search, if None, use all columns, if None or '*' search all
         :return: Results of the search
         """
         where_operand = 'LIKE'
@@ -140,16 +143,16 @@ class DBConnection:
             where_operand = '~'
             pc_sign = ''
 
-        where_tables, where_cols = self.resolve_tables_and_columns(table, columns or '*')
+        where_tables, where_cols = self.resolve_tables_and_columns(tables, columns)
         where_col_str = '::TEXT||'.join(where_cols) + '::TEXT'
 
         if len(where_tables) == 1:
             use_table = next(iter(where_tables), '')
-            self.current_schema = list(db_tables.get(use_table))
+            self.current_schema = list(self.db_tables.get(use_table))
             select_col_str = ", ".join(self.current_schema)
             query_str = \
                 f"SELECT {select_col_str} FROM {use_table} WHERE {where_col_str}" + \
-                f"{where_operand} \'{pc_sign}{user_query}{pc_sign}\';"
+                f" {where_operand} \'{pc_sign}{user_query}{pc_sign}\';"
         else:
             # Construct a PSQL JOIN like this:
             #  "SELECT album.title, album.artist, album.date, song.title, song.track_id,
@@ -169,6 +172,5 @@ class DBConnection:
 
 if __name__ == '__main__':
     db = DBConnection()
-    db.get_schema('song')
-    out = db.search(user_query='Bach', table='song')
+    out = db.search(user_query='Bach', tables='song')
     db.close()

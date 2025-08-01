@@ -3,35 +3,64 @@ module defining help functions for flask-based db search
 """
 import re
 import urllib.parse
+from collections import OrderedDict
 
-def build_html(columns, data, term):
+from settings import display_columns, play_cfg
+
+
+def columns_to_show(requested: list) -> list:
+    """
+    Verify the columns useer wants to see values from
+    :param requested: The names of the columns provided by the user
+    :return: A list of column names
+    """
+    return [col for col in requested if col in display_columns] if requested else display_columns
+
+
+def playback_dict(row_data: dict) -> dict:
+    """
+    Build a dictionary to use in the playback cell of the results table
+    :param row_data: A row or results data
+    :return: A dictionary with url encoded path and file name of the media file to play
+    """
+    d = {
+        "folder_path": row_data.get(play_cfg.get('file_path', ''), ''),
+        "file_name": row_data.get(play_cfg.get('file_name', ''), '')
+    }
+
+    return {k: urllib.parse.quote(v) for k, v in d.items()}
+
+
+def build_html(user_columns, db_columns, data, term):
     """
     Function to build HTML
-    :param columns: DB columns
+    :param user_columns: Columns whose values user wants to see (format: list of '<table_name>.<column_name>')
     :param data: Data retrieved from DB
-    :param term: Search term used to search DB
+    :param db_columns: A list of column from DB (format: list of '<table_name>.<column_name>')
+    :param term: A string representing the search term used to search DB
     :return: A string containing HTML with the search results
     """
-    html_string = \
-        f"<p>No of records found: {len(data)}</p>"
+    html_string = f"<p>No of records found: {len(data)}</p>"
 
     if not data:
         return html_string
-    display_cols = ["album.title","album.artist","album.date","song.title","song.artist","song.genre","song.track_id"]
 
+    use_cols = columns_to_show(user_columns)
     column_str = ''.join(["<th style=\"text-align:left\">Play Song</th>"]+
-                         [f'<th style="text-align:left">{col}</th>' for col in columns if col in display_cols])
+                         [f'<th style="text-align:left">{col}</th>' for col in use_cols])
     html_string += f"<table id=\"table\"><tr>{column_str}</tr>"
 
     for row in data:
-        d = {"folder_path": row[5],"file_name": row[15]}
-        d = {k: urllib.parse.quote(v) for k,v in d.items()}
+        row_data_dict = dict(zip(db_columns,list(row)))
+        d = playback_dict(row_data_dict)
         html_string += f"""<tr>
                         <td><input type = "button" value="Play track" onclick="setPlayer('{d["folder_path"]}',
                         '{d["file_name"]}')"/></td>"""
-        row_data_dict = dict(zip(columns,list(row)))
-        row_data_dict = {k: v for k,v in row_data_dict.items() if k in display_cols}
-        for entry in row_data_dict.values():
+        # row_data_dict = {k: v for k,v in row_data_dict.items() if k in display_cols}
+        # use_dict = {col: val for col, val in row_data_dict.items() if col in use_cols}
+        use_dict = OrderedDict({col: row_data_dict[col] for col in use_cols})
+
+        for entry in use_dict.values():
             entry_string = f'<td style="text-align:left"><div class="cell-content">{entry}</div></td>'
 
             if term in str(entry):
@@ -51,8 +80,7 @@ def replace_matches(term, in_string):
     :param in_string: string to search in
     :return: a string with html tags marking the matches
     """
-    re_term = fr'({term})'
-    s = re.split(re_term, in_string)
+    s = re.split(fr'({term})', in_string)
     s = [a for a in s if a]
 
     for count, item in enumerate(s):
