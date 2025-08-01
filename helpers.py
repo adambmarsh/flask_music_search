@@ -54,7 +54,7 @@ def build_html(user_columns, db_columns, data, term):
         row_data_dict = dict(zip(db_columns,list(row)))
         d = playback_dict(row_data_dict)
         html_string += f"""<tr>
-                        <td><input type = "button" value="Play track" onclick="setPlayer('{d["folder_path"]}',
+                        <td><input type = "button" value="Play track" onclick="window.setPlayer('{d["folder_path"]}',
                         '{d["file_name"]}')"/></td>"""
         # row_data_dict = {k: v for k,v in row_data_dict.items() if k in display_cols}
         # use_dict = {col: val for col, val in row_data_dict.items() if col in use_cols}
