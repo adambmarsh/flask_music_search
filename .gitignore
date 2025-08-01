@@ -63,7 +63,7 @@ target/
 # Project specific
 .env*
 .python-version
-.settings_db.yml
+.settings_*.yml
 pylintrc
 README.html
 uv.lock

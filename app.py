@@ -2,10 +2,12 @@
 module: app
 """
 import os
+import re
 import mimetypes
 from flask import Flask, jsonify, redirect, render_template, request, Response, abort, send_from_directory
 
 from db_connect import DBConnection
+from settings import audio_dir_path
 from helpers import build_html
 
 
@@ -43,15 +45,15 @@ def form():
 
     request_data = request.get_json()
     q = request_data['query']
-    search_table = request_data['tables']
-    search_columns = request_data['columns']
-
     db_conn = DBConnection()
-    out_data = db_conn.search(user_query=q, table=search_table, columns=search_columns)
+
+    out_data = db_conn.search(user_query=q, tables=None, columns=None)
+    req_cols = request_data.get('columns', '')
+    request_columns = re.split(r', *', req_cols) if len(req_cols) > 0 else []
 
     db_conn.close()
 
-    return jsonify({'html': build_html(db_conn.current_schema, out_data, q)})
+    return jsonify({'html': build_html(request_columns, db_conn.current_schema, out_data, q)})
 
 
 @app.route('/stream',methods=['GET'])
@@ -65,7 +67,7 @@ def stream():
     filename = request.args.get('fname')
     if not directory or not filename:
         return "No file path data provided..."
-    audio_dir = os.path.expanduser("~/lanmount/music/"+f"{directory}")
+    audio_dir = os.path.expanduser(audio_dir_path+f"{directory}")
     filepath = os.path.join(audio_dir, filename)
 
     # Check if the requested file actually exists on the server.
