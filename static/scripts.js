@@ -1,15 +1,28 @@
 
-export function setPlayer(directoryPath,fileName){
-      let uri = `stream?dir=${directoryPath}&fname=${fileName}`;
-      let player = document.getElementById('player');
-      if(player.src != uri){
-        player.src = uri;
-      }
-      let listener = (event) => {player.play();
-        player.removeEventListener("canplay",listener);
-      }
-      player.addEventListener("canplay", listener)
-    }
+//export function setPlayer(itemNo){
+//      window.myPlayerSet = true;
+//      let directoryPath = window.myPlayerData[itemNo][0];
+//      let fileName = window.myPlayerData[itemNo][1];
+//      let uri = `stream?dir=${directoryPath}&fname=${fileName}`;
+//      let player = document.getElementById('player');
+//
+//      if(player.src != uri){
+//        player.src = uri;
+//      }
+//
+//      let listener = (event) => {player.play();
+//        player.removeEventListener("canplay",listener);
+//      }
+//
+//      player.addEventListener("canplay", listener);
+//
+//    player.addEventListener("ended",()=>{
+//        let next = itemNo+1;
+//        setPlayer(itemNo+1);
+//    })
+//    }
+//function playMusic(){
+//}
 
 function checkDuplicates() {
       let table = document.querySelector('#table');
@@ -94,11 +107,19 @@ function loadDoc(url, cFunction) {
 function myFunction(xhttp) {
       const clean_response = xhttp.response.replace(/[\n ]/, '');
       const json_response = JSON.parse(clean_response);
+
       document.getElementById("output").innerHTML = json_response.html;
+
+      window.myPlayerData = json_response.player_data;
+      if(json_response.records === 0){
+        return;
+      }
+
       const result_elements = document.getElementsByTagName("mark");
       for (let each of result_elements) {
         each.style.color = "red";
       }
+
       checkDuplicates();
 
     }
