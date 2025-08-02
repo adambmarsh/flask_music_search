@@ -1,6 +1,7 @@
 """
 module defining help functions for flask-based db search
 """
+import os
 import re
 import urllib.parse
 from collections import OrderedDict
@@ -43,19 +44,20 @@ def build_html(user_columns, db_columns, data, term):
     html_string = f"<p>No of records found: {len(data)}</p>"
 
     if not data:
-        return html_string
+        return {'records': len(data), 'html': html_string,'player_data': []}
 
     use_cols = columns_to_show(user_columns)
     column_str = ''.join(["<th style=\"text-align:left\">Play Song</th>"]+
                          [f'<th style="text-align:left">{col}</th>' for col in use_cols])
     html_string += f"<table id=\"table\"><tr>{column_str}</tr>"
+    player_data = []
 
-    for row in data:
+    for row_num, row in enumerate(data):
         row_data_dict = dict(zip(db_columns,list(row)))
         d = playback_dict(row_data_dict)
-        html_string += f"""<tr>
-                        <td><input type = "button" value="Play track" onclick="window.setPlayer('{d["folder_path"]}',
-                        '{d["file_name"]}')"/></td>"""
+        html_string += f"""<tr><td><input type = "button" value="Play track" \
+        onclick="window.myPlayer.updateSrc({row_num})"/></td>"""
+        player_data.append([d["folder_path"],d["file_name"]])
         # row_data_dict = {k: v for k,v in row_data_dict.items() if k in display_cols}
         # use_dict = {col: val for col, val in row_data_dict.items() if col in use_cols}
         use_dict = OrderedDict({col: row_data_dict[col] for col in use_cols})
@@ -70,7 +72,7 @@ def build_html(user_columns, db_columns, data, term):
 
         html_string += '</tr>'
 
-    return html_string + '</table>'
+    return {'records': len(data), 'html': html_string + '</table>','player_data': player_data}
 
 
 def replace_matches(term, in_string):
@@ -91,7 +93,35 @@ def replace_matches(term, in_string):
 
     return ''.join(s)
 
+def find_music_file(filename: str, audio_dir: str)-> str:
+    """
+    :param filename: filename to search for
+    :param audio_dir: directory to search in
+    :return correct filepath if found, else None
+    """
+    if not audio_dir or not filename:
+        return ''
+    filepath = os.path.join(audio_dir, filename)
+
+    if os.path.exists(filepath):
+        return filepath
+
+    suffixes = ['flac','mp3','ogg','cue']
+    path_split = re.split(r'\.', filepath)
+
+    for each in suffixes:
+
+        if each == path_split[-1]:
+            continue
+        new_path = f'{path_split[0]}.{each}'
+
+        if os.path.exists(new_path):
+            filepath = new_path
+            return filepath
+    return ''
+
 
 if __name__ == '__main__':
     # print(get_span('Bach J.S. C.P. Bach J.SBach','Bach'))
-    print(replace_matches('Bach', 'Bach J.S. C.P. Bach J.SBach'))
+    # print(replace_matches('Bach', 'Bach J.S. C.P. Bach J.SBach'))
+    find_music_file("Various_-_Classic_CD_Magazine_32","09_Serenade No 10, Gran Partita - 3rd mvt, Adagio.flac")
