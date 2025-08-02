@@ -8,7 +8,7 @@ from flask import Flask, jsonify, redirect, render_template, request, Response, 
 
 from db_connect import DBConnection
 from settings import audio_dir_path
-from helpers import build_html
+from helpers import build_html, find_music_file
 
 
 app = Flask(__name__)
@@ -52,8 +52,8 @@ def form():
     request_columns = re.split(r', *', req_cols) if len(req_cols) > 0 else []
 
     db_conn.close()
-
-    return jsonify({'html': build_html(request_columns, db_conn.current_schema, out_data, q)})
+    json_response = build_html(request_columns, db_conn.current_schema, out_data, q)
+    return jsonify(json_response)
 
 
 @app.route('/stream',methods=['GET'])
@@ -67,17 +67,17 @@ def stream():
     filename = request.args.get('fname')
     if not directory or not filename:
         return "No file path data provided..."
-    audio_dir = os.path.expanduser(audio_dir_path+f"{directory}")
-    filepath = os.path.join(audio_dir, filename)
+    audio_dir = os.path.expanduser(audio_dir_path + f"{directory}")
+    filepath = find_music_file(filename, audio_dir)
 
     # Check if the requested file actually exists on the server.
-    if not os.path.exists(filepath):
+    if not filepath:
         # If not, return a 404 Not Found error.
         abort(404, description="File not found")
 
     # Guess the MIME type of the file based on its extension.
     # This tells the browser what type of content it's receiving (e.g., audio/mpeg for MP3).
-    mime_type = mimetypes.guess_type(filename)[0]
+    mime_type = mimetypes.guess_type(filepath)[0]
     if mime_type is None:
         # If the MIME type cannot be guessed, use a generic binary type.
         mime_type = 'application/octet-stream'
