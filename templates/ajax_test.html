@@ -6,10 +6,16 @@
   <link rel="stylesheet" href="{{url_for('static', filename='styles.css')}}">
   <title>Music Search</title>
   <script src="{{url_for('static', filename='scripts.js')}}" type="module"></script>
+  <script src="{{url_for('static', filename='player.js')}}" type="module"></script>
   <script type="module">
-    import {callback, setPlayer} from "{{url_for('static',filename='scripts.js')}}";
-    window.setPlayer = setPlayer;
+    import {callback} from "{{url_for('static',filename='scripts.js')}}";
+    import {Player} from "{{url_for('static', filename='player.js')}}";
+    // document.querySelector('body').addEventListener("load",init);
+    window.addEventListener("load", (event) => {
+    window.myPlayer = new Player();
     callback();
+    });
+
 
   </script>
 </head>
@@ -27,6 +33,7 @@
     <input id="button" type="button" value="Send" />
   </form>
   <audio id = "player" controls src=""></audio>
+  <p id="nowPlaying"></p>
 </div>
   <div id="output"></div>
 </body>
