@@ -9,7 +9,7 @@ export class Player {
     async play(){
         try{
         await this.player.play();
-        document.querySelector('#nowPlaying').innerHTML = `${window.myPlayerData[this.trackNo]}`;
+        document.querySelector('#nowPlaying').innerHTML = `${decodeURIComponent(window.myPlayerData[this.trackNo])}`;
         }
         catch (err){
         }
