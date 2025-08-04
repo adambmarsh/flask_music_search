@@ -4,15 +4,16 @@ module: app
 import os
 import re
 import mimetypes
+
 from flask import Flask, jsonify, redirect, render_template, request, Response, abort, send_from_directory
 
 from db_connect import DBConnection
-from settings import audio_dir_path
+from settings import audio_dir_path, app_key
 from helpers import build_html, find_music_file
 
 
 app = Flask(__name__)
-app.config['SECRET_KEY'] = 'brian-the-dinosaur'
+app.config['SECRET_KEY'] = app_key
 
 
 @app.route('/', methods=['GET', 'POST'])
