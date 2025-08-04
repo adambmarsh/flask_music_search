@@ -8,7 +8,8 @@ from utils import read_yaml
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
-
+app_cfg = read_yaml(os.path.join(os.getcwd(), ".settings_app.yml"))
+app_key = app_cfg.get('key')
 playback_cfg = read_yaml(os.path.join(os.getcwd(), ".settings_playback.yml"))
 play_cfg = dict(playback_cfg.get('file'))
 display_columns = list(playback_cfg.get('display_cols'))

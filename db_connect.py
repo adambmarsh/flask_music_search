@@ -61,7 +61,9 @@ class DBConnection:
         :return: A list of column names
         """
         self.cur.execute(
-            f"SELECT column_name, data_type FROM information_schema.columns WHERE table_name = '{table}';")
+            """SELECT column_name, data_type
+            FROM information_schema.columns
+            WHERE table_name = %(table)s;""",{'table': table})
 
         query_results = self.cur.fetchall()
         return [x[0] for x in query_results if x[0] != 'id']
