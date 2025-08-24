@@ -1,7 +1,15 @@
+:root {
+  /* Backgrounds */
+  --primary-background: black;
+  /* Colors */
+  --primary-text-color: white;
+  --primary-border-color: black;
+}
+
 table,
 th,
 td {
-    border: 1px solid black;
+    border: 1px solid var(--primary-border-color);
     border-collapse: collapse;
 
 }
@@ -12,8 +20,9 @@ td{
  font-family: sans-serif;
  font-size: smaller;
  position: sticky;
-  top: 0;
-  background-color: black;
+ top: 0;
+ background-color: var(--primary-background);
+ color: var(--primary-text-color);
 }
 div.cell-content {
     /* max-height: 50px; */
@@ -46,7 +55,7 @@ td {
 
 
 label {
-    color: white;
+    color: var(--primary-text-color);
     font-weight: bold;
     width: 85px;
     margin-left: 12px;
