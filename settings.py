@@ -14,6 +14,7 @@ playback_cfg = read_yaml(os.path.join(os.getcwd(), ".settings_playback.yml"))
 play_cfg = dict(playback_cfg.get('file'))
 display_columns = list(playback_cfg.get('display_cols'))
 audio_dir_path = playback_cfg.get('audio_dir_path')
+stream_chunk_size = playback_cfg.get('stream_chunk')
 
 db_config = read_yaml(os.path.join(os.getcwd(), ".settings_db.yml"))
 

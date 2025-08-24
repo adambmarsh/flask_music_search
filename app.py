@@ -8,7 +8,7 @@ import mimetypes
 from flask import Flask, jsonify, redirect, render_template, request, Response, abort, send_from_directory
 
 from db_connect import DBConnection
-from settings import audio_dir_path, app_key
+from settings import audio_dir_path, app_key, stream_chunk_size
 from helpers import build_html, find_music_file
 
 
@@ -122,7 +122,7 @@ def stream():
             with open(filepath, 'rb') as f:
                 f.seek(start_byte)  # Move the file pointer to the start of the requested range
                 remaining_bytes = length
-                chunk_size = 8192  # Define a suitable chunk size (e.g., 8KB) for streaming
+                chunk_size = stream_chunk_size  # Define a suitable chunk size (e.g., 8KB) for streaming
 
                 while remaining_bytes > 0:
                     # Read a chunk, ensuring we don't read more than 'remaining_bytes'
