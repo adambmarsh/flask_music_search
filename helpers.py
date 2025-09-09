@@ -1,15 +1,15 @@
 """
 module defining help functions for flask-based db search
 """
-import os
-import re
 import urllib.parse
 from collections import OrderedDict
+from pathlib import Path
+from string import Template
 
 from settings import display_columns, play_cfg
 
 
-def columns_to_show(requested: list) -> list:
+def columns_to_show(requested: list[str]) -> list[str]:
     """
     Verify the columns useer wants to see values from
     :param requested: The names of the columns provided by the user
@@ -18,21 +18,7 @@ def columns_to_show(requested: list) -> list:
     return [col for col in requested if col in display_columns] if requested else display_columns
 
 
-def playback_dict(row_data: dict) -> dict:
-    """
-    Build a dictionary to use in the playback cell of the results table
-    :param row_data: A row or results data
-    :return: A dictionary with url encoded path and file name of the media file to play
-    """
-    d = {
-        "folder_path": row_data.get(play_cfg.get('file_path', ''), ''),
-        "file_name": row_data.get(play_cfg.get('file_name', ''), '')
-    }
-
-    return {k: urllib.parse.quote(v) for k, v in d.items()}
-
-
-def build_html(user_columns, db_columns, data, term):
+def build_html(user_columns: list[str], db_columns: list[str], data: list[tuple], term: str) -> str:
     """
     Function to build HTML
     :param user_columns: Columns whose values user wants to see (format: list of '<table_name>.<column_name>')
@@ -47,81 +33,72 @@ def build_html(user_columns, db_columns, data, term):
         return {'records': len(data), 'html': html_string,'player_data': []}
 
     use_cols = columns_to_show(user_columns)
-    column_str = ''.join(["<th style=\"text-align:left\">Play Song</th>"]+
-                         [f'<th style="text-align:left">{col}</th>' for col in use_cols])
-    html_string += f"<table id=\"table\"><tr>{column_str}</tr>"
+
+    th_row_tmpl = Template("<table id=\"table\"><tr>$col_str</tr>")
+    tr_input_tmpl = \
+        Template('<tr><td><input type = "button" value="Play track" onclick="window.myPlayer.updateSrc($row)"/></td>')
+    tr_td_tmpl = Template('<td style="text-align:left"><div class="cell-content">$cells</div></td>')
+
+    html_string += th_row_tmpl.substitute(
+        col_str=''.join(['<th style="text-align:left">Play Song</th>']+
+                         [f'<th style="text-align:left">{col}</th>' for col in use_cols]))
     player_data = []
 
     for row_num, row in enumerate(data):
         row_data_dict = dict(zip(db_columns,list(row)))
-        d = playback_dict(row_data_dict)
-        html_string += f"""<tr><td><input type = "button" value="Play track" \
-        onclick="window.myPlayer.updateSrc({row_num})"/></td>"""
-        player_data.append([d["folder_path"],d["file_name"]])
-        # row_data_dict = {k: v for k,v in row_data_dict.items() if k in display_cols}
-        # use_dict = {col: val for col, val in row_data_dict.items() if col in use_cols}
         use_dict = OrderedDict({col: row_data_dict[col] for col in use_cols})
 
-        for entry in use_dict.values():
-            entry_string = f'<td style="text-align:left"><div class="cell-content">{entry}</div></td>'
+        html_string += tr_input_tmpl.substitute(row=row_num) + \
+            ''.join((mark_matches(term, tr_td_tmpl.substitute(cells=entry)) for entry in use_dict.values())) + \
+            '</tr>'
 
-            if term in str(entry):
-                entry_string = replace_matches(term, entry_string)
-
-            html_string += entry_string
-
-        html_string += '</tr>'
+        player_data.append([urllib.parse.quote(row_data_dict.get(play_cfg.get('file_path', ''), '')),
+                            urllib.parse.quote(row_data_dict.get(play_cfg.get('file_name', ''), ''))])
 
     return {'records': len(data), 'html': html_string + '</table>','player_data': player_data}
 
 
-def replace_matches(term, in_string):
+def mark_matches(term: str, in_string: str) -> str:
     """
-
-    :param term: term to search for
-    :param in_string: string to search in
-    :return: a string with html tags marking the matches
+    Mark (highlight) the received term in the HTML string.
+    :param term: term to mark
+    :param in_string: string in which to mark occurrences of term
+    :return: marked-up HTML string on success or unchanged in_string if no matches are found
     """
-    s = re.split(fr'({term})', in_string)
-    s = [a for a in s if a]
+    return in_string.replace(term, f"<mark>{term}</mark>")
 
-    for count, item in enumerate(s):
-        if item != term:
-            continue
 
-        s[count] = f"<mark>{item}</mark>"
-
-    return ''.join(s)
-
-def find_music_file(filename: str, audio_dir: str)-> str:
+def find_music_file(filename: str, audio_dir: str)-> Path|None:
     """
-    :param filename: filename to search for
+    Find the audio file and get its current path.
+    :param filename: filename to find
     :param audio_dir: directory to search in
-    :return correct filepath if found, else None
+    :return correct filepath if file is found, else None
     """
     if not audio_dir or not filename:
-        return ''
-    filepath = os.path.join(audio_dir, filename)
+        return None
 
-    if os.path.exists(filepath):
+    filepath = Path(audio_dir) / filename
+
+    if filepath.is_file():
         return filepath
 
-    suffixes = ['flac','mp3','ogg','cue']
-    path_split = re.split(r'\.', filepath)
+    # In case the DB is out of date and audio files have been converted
+    # to a different format, try different extensions ...
 
-    for each in suffixes:
+    extensions = ['.flac','.mp3','.ogg','.cue']
 
-        if each == path_split[-1]:
-            continue
-        new_path = f'{path_split[0]}.{each}'
+    for ext in filter(lambda e: e != filepath.suffix, extensions):
+        if (new_path := filepath.with_suffix(ext)).is_file():
+            return new_path
 
-        if os.path.exists(new_path):
-            filepath = new_path
-            return filepath
-    return ''
+    return None
 
 
 if __name__ == '__main__':
     # print(get_span('Bach J.S. C.P. Bach J.SBach','Bach'))
     # print(replace_matches('Bach', 'Bach J.S. C.P. Bach J.SBach'))
-    find_music_file("Various_-_Classic_CD_Magazine_32","09_Serenade No 10, Gran Partita - 3rd mvt, Adagio.flac")
+    out = find_music_file("09_Serenade No 10, Gran Partita - 3rd mvt, Adagio.flac",
+                    "/home/adam/lanmount/music/Various_-_Classic_CD_Magazine_32")
+
+    print(out)

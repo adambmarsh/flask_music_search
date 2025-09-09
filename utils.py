@@ -7,7 +7,6 @@ from ruamel.yaml.parser import ParserError
 from ruamel.yaml.scanner import ScannerError
 
 
-
 def log_it(level='info', src_name=None, text=None):
     """
     Logger function
