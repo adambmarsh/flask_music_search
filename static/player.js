@@ -22,7 +22,7 @@ export class Player {
         let date = dataArray[2];
         date = date.slice(0,4);
         let title = dataArray[3];
-        let displayString = `${album} ${artist} ${title} (${date})`;
+        let displayString = `${album} || ${artist} || ${title} || (${date})`;
         displayString = displayString.replaceAll("_"," ");
         document.querySelector('#nowPlaying').innerHTML = displayString;
         }
