@@ -36,7 +36,7 @@ def build_html(user_columns: list[str], db_columns: list[str], data: list[tuple]
 
     th_row_tmpl = Template("<table id=\"table\"><tr>$col_str</tr>")
     tr_input_tmpl = \
-        Template('<tr><td><input type = "button" value="Play track" onclick="window.myPlayer.updateSrc($row)"/></td>')
+        Template('<tr><td><input type = "button" value="Play track" onclick="window.myPlayer.updateSrc(this,$row)"/></td>')
     tr_td_tmpl = Template('<td style="text-align:left"><div class="cell-content">$cells</div></td>')
 
     html_string += th_row_tmpl.substitute(

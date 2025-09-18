@@ -23,6 +23,7 @@ td{
  top: 0;
  background-color: var(--primary-background);
  color: var(--primary-text-color);
+ z-index: 1;
 }
 div.cell-content {
     /* max-height: 50px; */
@@ -68,4 +69,16 @@ label:after {
 }
 #player{
 width: 25%;
+}
+#row_pointer{
+visibility: visible;
+color: var(--primary-text-color);
+}
+#floating-div{
+position: absolute;
+border: 1px solid var(--primary-background-color);
+z-index: -1;
+opacity: 1.0;
+background-color: #34eb6e;
+
 }
