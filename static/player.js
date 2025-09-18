@@ -3,11 +3,16 @@ export class Player {
     this.player = document.getElementById('player');
     this.player.addEventListener("ended",this.handleEvents);
     this.player.addEventListener("volumechange",this.handleEvents);
+    document.querySelector("#row_pointer").addEventListener("click", ()=>{this.scrollToRow()});
+    addEventListener("scroll",() => {this.updateDivPosition()});
+    this.divOpacity = 0;
 
     this.src = ""
     this.trackNo = 0;
     this.srcSet = false;
+    this.playingRow;
     }
+
     async play(){
         try{
         await this.player.play();
@@ -37,6 +42,11 @@ export class Player {
             case "volumechange":
                 this.updateVolumeCookie();
                 break;
+            case "play":
+                if(!this.interval){
+                this.handleInterval();
+                }
+                break;
             default:
                 console.log("Unregistered event.type detected.")
         }
@@ -51,7 +61,7 @@ export class Player {
         }
 
     }
-    updateSrc(trackNo=this.trackNo){
+    updateSrc(element, trackNo=this.trackNo){
         this.trackNo = trackNo;
         let directoryPath = window.myPlayerData[trackNo][0];
         let fileName = window.myPlayerData[trackNo][1];
@@ -61,6 +71,28 @@ export class Player {
             this.src = uri;
         }
         this.play();
+        this.playingRow = element.parentElement.parentElement;
+        this.indicatePlaying();
+    }
+    indicatePlaying(){
+//         this.playingRow.style.backgroundColor = "#34eb6e";
+         let floater = document.querySelector("#floating-div");
+         const rect = this.playingRow.getBoundingClientRect();
+//         floater.style.position = "absolute";
+         floater.style.left = rect.left + window.scrollX + 'px';
+         floater.style.top = rect.top + window.scrollY + 'px';
+         floater.style.height = rect.height + 'px';
+         floater.style.width = rect.width + 'px';
+//         floater.style.backgroundColor = "#34eb6e";
+         floater.style.opacity = "0.5";
+    }
+    updateDivPosition(){
+        if(this.srcSet === true){
+        this.indicatePlaying();
+        }
+    }
+    scrollToRow(){
+        this.playingRow.scrollIntoView({block: "end", inline: "nearest"});
     }
     updateVolumeCookie(){
         let d = new Date();
