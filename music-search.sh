@@ -65,4 +65,4 @@ fi
 
 "$HOME"/scripts/mount_music
 
-. "$activate_path" && cd "$run_dir" && gunicorn --workers 2 --bind "$ip":"$port" app:app && deactivate
+. "$activate_path" && cd "$run_dir" && gunicorn --workers 4 --timeout 240 --bind "$ip":"$port" app:app && deactivate
