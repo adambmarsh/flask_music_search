@@ -16,7 +16,15 @@ export class Player {
     async play(){
         try{
         await this.player.play();
-        document.querySelector('#nowPlaying').innerHTML = `${decodeURIComponent(window.myPlayerData[this.trackNo])}`;
+        let dataArray = this.playingRow.firstChild.children[1].value.split('||');
+        let album = dataArray[0];
+        let artist = dataArray[1];
+        let date = dataArray[2];
+        date = date.slice(0,4);
+        let title = dataArray[3];
+        let displayString = `${album} ${artist} ${title} (${date})`;
+        displayString = displayString.replaceAll("_"," ");
+        document.querySelector('#nowPlaying').innerHTML = displayString;
         }
         catch (err){
         }
