@@ -36,7 +36,9 @@ def build_html(user_columns: list[str], db_columns: list[str], data: list[tuple]
 
     th_row_tmpl = Template("<table id=\"table\"><tr>$col_str</tr>")
     tr_input_tmpl = \
-        Template('<tr><td><input type = "button" value="Play track" onclick="window.myPlayer.updateSrc(this,$row)"/></td>')
+        Template('<tr><td><input type = "button" value="Play track" onclick="window.myPlayer.updateSrc(this,$row)"/>'
+                 '<input type="hidden" name="full-content" value="$content" />'
+                 '</td>')
     tr_td_tmpl = Template('<td style="text-align:left"><div class="cell-content">$cells</div></td>')
 
     html_string += th_row_tmpl.substitute(
@@ -47,8 +49,8 @@ def build_html(user_columns: list[str], db_columns: list[str], data: list[tuple]
     for row_num, row in enumerate(data):
         row_data_dict = dict(zip(db_columns,list(row)))
         use_dict = OrderedDict({col: row_data_dict[col] for col in use_cols})
-
-        html_string += tr_input_tmpl.substitute(row=row_num) + \
+        full_content = ''.join([str(a) + '||' for a in list(use_dict.values())])
+        html_string += tr_input_tmpl.substitute(row=row_num,content=full_content) + \
             ''.join((mark_matches(term, tr_td_tmpl.substitute(cells=entry)) for entry in use_dict.values())) + \
             '</tr>'
 
