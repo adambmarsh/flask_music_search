@@ -79,7 +79,12 @@ export class Player {
             this.src = uri;
         }
         this.play();
-        this.playingRow = element.parentElement.parentElement;
+        if(element){
+            this.playingRow = element.parentElement.parentElement;
+        }
+        else{
+            this.playingRow = this.playingRow.nextElementSibling;
+        }
         this.indicatePlaying();
     }
     indicatePlaying(){
