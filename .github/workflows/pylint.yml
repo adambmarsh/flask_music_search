@@ -7,7 +7,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        python-version: ["3.13"]
+        python-version: ["3.12"]
     steps:
     - uses: actions/checkout@v5
     - name: Install uv
@@ -20,8 +20,8 @@ jobs:
     - name: Install dependencies
       run: |
         uv venv
-        uv pip install -r pyproject.toml
-        uv pip install "pylint==3.3.8"
+        uv pip install -r requirements.txt
+        uv pip install pylint
     - name: Analysing the code with pylint
       run: |
         pylint $(git ls-files '*.py')
