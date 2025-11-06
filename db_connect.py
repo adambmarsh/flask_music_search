@@ -48,11 +48,13 @@ class DBConnection:
         :return: a list of table names
         """
         self.cur.execute(
-            f"SELECT table_schema,table_name FROM information_schema.tables WHERE tables.table_schema='{schema_id}'")
+            f"SELECT table_schema,table_name FROM information_schema.tables "
+            f"WHERE tables.table_schema='{schema_id}'")
 
         query_results = self.cur.fetchall()
 
-        return list(filter(lambda x: x not in ['django_migrations', 'combiview'], [x[1] for x in query_results]))
+        return list(filter(
+            lambda x: x not in ['django_migrations', 'combiview'], [x[1] for x in query_results]))
 
     def _get_table_schema(self, table):
         """
@@ -90,7 +92,7 @@ class DBConnection:
         """
         Get column names for named table and verify them against the db
         :param tables: A list naming tables for which to verify columns
-        :param in_columns: A string containing comma-separated table column names or '*'/None for all
+        :param in_columns: A string of comma-separated table column names or '*'/None for all
         :return: A list of verified column names
         """
         out_columns = []
@@ -98,7 +100,8 @@ class DBConnection:
             if not in_columns or in_columns == '*':
                 out_columns += [f"{tbl}.{col}" for col in self.db_tables.get(tbl, [])]
             else:
-                out_columns += [f"{tbl}.{col}" for col in self.db_tables.get(tbl, []) if col in in_columns]
+                out_columns += [f"{tbl}.{col}" for col in self.db_tables.get(tbl, []) if col \
+                                in in_columns]
 
         return out_columns
 
@@ -134,7 +137,7 @@ class DBConnection:
         """
         Run a db search.
         :param user_query: Text containing the search terms
-        :param tables: Names of DB tables to search, a comma-separated string, if None or '*', search all
+        :param tables: DB table names to search, comma-separated, if None or '*', search all
         :param columns: DB columns to search, if None, use all columns, if None or '*' search all
         :return: Results of the search
         """
@@ -162,10 +165,11 @@ class DBConnection:
             #  ORDER BY album.path, song.track_id;"
             self.current_schema = where_cols
             select_col_str = ", ".join(self.current_schema)
-            query_str = (f"SELECT {select_col_str} FROM {where_tables[0]} JOIN {where_tables[1]} on " +
-                         f"{where_tables[1]}.album_id = {where_tables[0]}.id WHERE " +
-                         f"{where_col_str} {where_operand} \'{pc_sign}{user_query}{pc_sign}\'"+
-                         "ORDER BY album.title DESC, song.track_id;")
+            query_str = (
+                    f"SELECT {select_col_str} FROM {where_tables[0]} JOIN {where_tables[1]} on " +
+                    f"{where_tables[1]}.album_id = {where_tables[0]}.id WHERE " +
+                    f"{where_col_str} {where_operand} \'{pc_sign}{user_query}{pc_sign}\'"+
+                    "ORDER BY album.title DESC, song.track_id;")
 
         self.cur.execute(query_str)
 

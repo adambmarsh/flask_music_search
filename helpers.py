@@ -21,9 +21,11 @@ def columns_to_show(requested: list[str]) -> list[str]:
 def build_html(user_columns: list[str], db_columns: list[str], data: list[tuple], term: str) -> str:
     """
     Function to build HTML
-    :param user_columns: Columns whose values user wants to see (format: list of '<table_name>.<column_name>')
+    :param user_columns: Columns whose values user wants to see (format: list of
+    '<table_name>.<column_name>')
     :param data: Data retrieved from DB
-    :param db_columns: A list of column from DB (format: list of '<table_name>.<column_name>')
+    :param db_columns: A list of column from DB (format: list of
+    '<table_name>.<column_name>')
     :param term: A string representing the search term used to search DB
     :return: A string containing HTML with the search results
     """
@@ -36,7 +38,8 @@ def build_html(user_columns: list[str], db_columns: list[str], data: list[tuple]
 
     th_row_tmpl = Template("<table id=\"table\"><tr>$col_str</tr>")
     tr_input_tmpl = \
-        Template('<tr><td><input type = "button" value="Play track" onclick="window.myPlayer.updateSrc(this,$row)"/>'
+        Template('<tr><td><input type = "button" value="Play track" '
+                 'onclick="window.myPlayer.updateSrc(this,$row)"/>'
                  '<input type="hidden" name="full-content" value="$content" />'
                  '</td>')
     tr_td_tmpl = Template('<td style="text-align:left"><div class="cell-content">$cells</div></td>')
@@ -51,11 +54,15 @@ def build_html(user_columns: list[str], db_columns: list[str], data: list[tuple]
         use_dict = OrderedDict({col: row_data_dict[col] for col in use_cols})
         full_content = ''.join([str(a) + '||' for a in list(use_dict.values())])
         html_string += tr_input_tmpl.substitute(row=row_num,content=full_content) + \
-            ''.join((mark_matches(term, tr_td_tmpl.substitute(cells=entry)) for entry in use_dict.values())) + \
+            ''.join((
+                mark_matches(
+                    term, tr_td_tmpl.substitute(cells=entry)
+                ) for entry in use_dict.values())) + \
             '</tr>'
 
-        player_data.append([urllib.parse.quote(row_data_dict.get(play_cfg.get('file_path', ''), '')),
-                            urllib.parse.quote(row_data_dict.get(play_cfg.get('file_name', ''), ''))])
+        player_data.append(
+            [urllib.parse.quote(row_data_dict.get(play_cfg.get('file_path', ''), '')),
+                urllib.parse.quote(row_data_dict.get(play_cfg.get('file_name', ''), ''))])
 
     return {'records': len(data), 'html': html_string + '</table>','player_data': player_data}
 

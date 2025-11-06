@@ -1,14 +1,14 @@
 """
 module: app
 """
-import os
-import re
 import mimetypes
-
-from flask import Flask, jsonify, redirect, render_template, request, Response, abort, send_from_directory
+import re
+import os
+from flask import (Flask, jsonify, redirect, render_template, request, Response, abort,
+                   send_from_directory)
+from settings import audio_dir_path, app_key, stream_chunk_size
 
 from db_connect import DBConnection
-from settings import audio_dir_path, app_key, stream_chunk_size
 from helpers import build_html, find_music_file
 
 
@@ -83,7 +83,8 @@ def stream():
         # If the MIME type cannot be guessed, use a generic binary type.
         mime_type = 'application/octet-stream'
 
-    # Get the total size of the file in bytes. This is needed for Content-Length and Content-Range headers.
+    # Get the total size of the file in bytes. This is needed for Content-Length and
+    # Content-Range headers.
     file_size = os.path.getsize(filepath)
 
     # Check for the 'Range' header in the client's request.
@@ -122,7 +123,7 @@ def stream():
             with open(filepath, 'rb') as f:
                 f.seek(start_byte)  # Move the file pointer to the start of the requested range
                 remaining_bytes = length
-                chunk_size = stream_chunk_size  # Define a suitable chunk size (e.g., 8KB) for streaming
+                chunk_size = stream_chunk_size  # Set chunk size (e.g., 8KB) for streaming
 
                 while remaining_bytes > 0:
                     # Read a chunk, ensuring we don't read more than 'remaining_bytes'
@@ -140,8 +141,9 @@ def stream():
         response.headers.set('Content-Type', mime_type)  # The MIME type of the audio
         response.headers.set('Content-Length', str(length))  # The size of the *partial* content
         response.headers.set('Content-Range',
-                             f'bytes {start_byte}-{end_byte}/{file_size}')  # The byte range being sent
-        response.headers.set('Accept-Ranges', 'bytes')  # Inform the client that the server supports byte ranges
+                             f'bytes {start_byte}-{end_byte}/{file_size}')  # byte range to send
+        response.headers.set('Accept-Ranges',
+                             'bytes')  # Tell client the server supports byte ranges
 
         return response
 
@@ -152,7 +154,7 @@ def stream():
         audio_dir,
         filename,
         mimetype=mime_type,
-        as_attachment=False  # 'False' means display/play in the browser; 'True' forces a download dialog.
+        as_attachment=False  # 'False' = display/play in browser; 'True' = force download dialog
     )
 
 
