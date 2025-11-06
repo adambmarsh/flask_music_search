@@ -2,9 +2,12 @@
 module provide utility function
 """
 import logging
+import os
+import sys
 from ruamel.yaml import YAML
 from ruamel.yaml.parser import ParserError
 from ruamel.yaml.scanner import ScannerError
+sys.path.append(os.path.join(os.path.dirname(__file__),'./.venv/ib/python3.13/site-packages/'))
 
 
 def log_it(level='info', src_name=None, text=None):
