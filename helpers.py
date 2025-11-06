@@ -27,7 +27,7 @@ def build_html(user_columns: list[str], db_columns: list[str], data: list[tuple]
     :param term: A string representing the search term used to search DB
     :return: A string containing HTML with the search results
     """
-    html_string = f"<p>No of records found: {len(data)}</p>"
+    html_string = f"<p>No&nbsp;of&nbsp;records&nbsp;found:&nbsp;{len(data)}</p>"
 
     if not data:
         return {'records': len(data), 'html': html_string,'player_data': []}
