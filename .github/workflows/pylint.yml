@@ -24,7 +24,7 @@ jobs:
           uv venv
           source .venv/bin/activate
           uv sync
-          uv pip add pylint
+          uv add pylint
       - name: Analyse the code with pylint
         run: |
           pylint $(git ls-files '*.py')
