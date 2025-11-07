@@ -21,6 +21,7 @@ jobs:
       - name: Install dependencies
         shell: bash
         run: |
+          uv venv
           uv sync
           uv pip install pylint
       - name: Analyse the code with pylint
