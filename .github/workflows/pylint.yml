@@ -31,3 +31,35 @@ jobs:
         run: |
           source .venv/bin/activate
           pylint $(git ls-files '*.py')
+  ort:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Use HTTPS instead of SSH for Git cloning
+        run: git config --global url.https://github.com/.insteadOf ssh://git@github.com/
+      - name: Checkout project
+        uses: actions/checkout@v5
+        with:
+          repository: 'adambmarsh/flask_music_search'
+      - name: Run GitHub Action for ORT
+        uses: oss-review-toolkit/ort-ci-github-action@main
+        with:
+          allow-dynamic-versions: 'true'
+          fail-on: 'violations'
+
+  ort-labesl:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Use HTTPS instead of SSH for Git cloning
+        run: git config --global url.https://github.com/.insteadOf ssh://git@github.com/
+      - name: Checkout project
+        uses: actions/checkout@v5
+        with:
+          repository: 'jshttp/mime-types'
+      - name: Run GitHub Action for ORT
+        uses: oss-review-toolkit/ort-ci-github-action@main
+        with:
+          allow-dynamic-versions: 'true'
+          ort-cli-analyze-args: >
+            -l project=oss-project
+            -l dist=external
+            -l org=engineering-sdk-xyz-team-germany-berlin
