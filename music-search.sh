@@ -56,13 +56,15 @@ do
 done
 
 if [ -z "$ip" ]; then
-    ip=$(hostname -i | sed -r 's/^[0-9\.]+\ +//g')
+    # ip=$(hostname -i | sed -r 's/^[0-9\.]+\ +//g')
+    ip="127.0.0.1"
 fi
 
 if [ -z "$port" ]; then
     port="5000"
 fi
 
-"$HOME"/scripts/mount_music
+"$HOME"/scripts/mount_music && "$HOME"/scripts/mount_video && "$HOME"/scripts/start-tailnet-books.sh
 
-. "$activate_path" && cd "$run_dir" && gunicorn --workers 4 --timeout 240 --bind "$ip":"$port" app:app && deactivate
+. "$activate_path" && cd "$run_dir" && gunicorn --workers 4 --timeout 240 --bind "$ip":"$port" app:app  && deactivate
+
