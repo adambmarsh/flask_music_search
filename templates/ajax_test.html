@@ -18,12 +18,14 @@
 
 
   </script>
+    <link rel="shortcut icon" href="{{ url_for('static', filename='favicon.ico') }}">
 </head>
 
 <body>
+
 <div class="top-display">
   <form id="form">
-    <label>Search for ...</label>
+    <label>Find: </label>
     <input class="in_query" type="text" id="query" placeholder="Text to find or regular expression" />
     <br />
     <label>Column(s)</label>
