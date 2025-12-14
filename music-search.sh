@@ -64,7 +64,11 @@ if [ -z "$port" ]; then
     port="5000"
 fi
 
-"$HOME"/scripts/mount_music && "$HOME"/scripts/mount_video && "$HOME"/scripts/start-tailnet-books.sh
+if [ -f "$HOME"/scripts/mount_video ]; then
+    "$HOME"/scripts/mount_video
+fi
+
+"$HOME"/scripts/mount_music && "$HOME"/scripts/start-tailnet-books.sh
 
 . "$activate_path" && cd "$run_dir" && gunicorn --workers 4 --timeout 240 --bind "$ip":"$port" app:app  && deactivate
 
