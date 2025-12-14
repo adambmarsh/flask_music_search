@@ -36,16 +36,17 @@ def build_html(user_columns: list[str], db_columns: list[str], data: list[tuple]
 
     use_cols = columns_to_show(user_columns)
 
-    th_row_tmpl = Template("<table id=\"table\"><tr>$col_str</tr>")
+    th_row_tmpl = Template("<table id=\"table\"><thead><tr>$col_str</tr></thead>")
+
     tr_input_tmpl = \
-        Template('<tr><td><input type = "button" value="Play track" '
+        Template('<tr><td><input type = "button" value=" \u25B6 " '
                  'onclick="window.myPlayer.updateSrc(this,$row)"/>'
                  '<input type="hidden" name="full-content" value="$content" />'
                  '</td>')
     tr_td_tmpl = Template('<td style="text-align:left"><div class="cell-content">$cells</div></td>')
 
     html_string += th_row_tmpl.substitute(
-        col_str=''.join(['<th style="text-align:left">Play Song</th>']+
+        col_str=''.join(['<th style="text-align:left">Play</th>']+
                          [f'<th style="text-align:left">{col}</th>' for col in use_cols]))
     player_data = []
 

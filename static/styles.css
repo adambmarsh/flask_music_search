@@ -3,15 +3,26 @@
   --primary-background: black;
   /* Colors */
   --primary-text-color: white;
-  --primary-border-color: lightgray;
+  --primary-border-color: gray;
+  --table-background-color: lightgray;
 }
 
 table,
-th,
+thead {
+    position: sticky;
+    top: 0;
+    border: 1px solid var(--primary-border-color);
+    background-color: var(--table-background-color);
+    z-index: 2;
+    /* box-shadow: 0 2px 2px rgba(0,0,0,0.1); */
+},
+th {
+    border: 1px solid var(--primary-border-color);
+    border-collapse: collapse;
+},
 td {
     border: 1px solid var(--primary-border-color);
     border-collapse: collapse;
-
 }
 td{
     width: max-content;
@@ -19,7 +30,6 @@ td{
 .top-display{
  font-family: sans-serif;
  font-size: smaller;
- position: sticky;
  top: 0;
  background-color: var(--primary-background);
  color: var(--primary-text-color);
