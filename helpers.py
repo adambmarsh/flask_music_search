@@ -9,6 +9,18 @@ from string import Template
 from settings import display_columns, play_cfg
 
 
+tr_input_tmpl = \
+    Template('<tr><td><input type = "button" value=" \u25B6 " '
+             'onclick="window.myPlayer.updateSrc(this,$row)"/>'
+             '<input type="hidden" name="full-content" value="$content" />'
+             '</td>')
+tr_td_tmpl = Template('<td style="text-align:left"><div class="cell-content">$cells</div></td>')
+tr_td_comment_tmpl = Template(
+    '<td style="text-align:left"><div class="tooltip">$cell<span class="tooltiptext">$allcell' +
+    '</span></div></td>'
+)
+
+
 def columns_to_show(requested: list[str]) -> list[str]:
     """
     Verify the columns useer wants to see values from
@@ -38,13 +50,6 @@ def build_html(user_columns: list[str], db_columns: list[str], data: list[tuple]
 
     th_row_tmpl = Template("<table id=\"table\"><thead><tr>$col_str</tr></thead>")
 
-    tr_input_tmpl = \
-        Template('<tr><td><input type = "button" value=" \u25B6 " '
-                 'onclick="window.myPlayer.updateSrc(this,$row)"/>'
-                 '<input type="hidden" name="full-content" value="$content" />'
-                 '</td>')
-    tr_td_tmpl = Template('<td style="text-align:left"><div class="cell-content">$cells</div></td>')
-
     html_string += th_row_tmpl.substitute(
         col_str=''.join(['<th style="text-align:left">Play</th>']+
                          [f'<th style="text-align:left">{col}</th>' for col in use_cols]))
@@ -57,8 +62,11 @@ def build_html(user_columns: list[str], db_columns: list[str], data: list[tuple]
         html_string += tr_input_tmpl.substitute(row=row_num,content=full_content) + \
             ''.join((
                 mark_matches(
-                    term, tr_td_tmpl.substitute(cells=entry)
-                ) for entry in use_dict.values())) + \
+                    term,
+                    tr_td_comment_tmpl.substitute(
+                        cell=" ".join([entry[:10], '...'] if entry else ""), allcell=entry
+                    )  if key == 'album.comment' else tr_td_tmpl.substitute(cells=entry)
+                ) for key, entry in use_dict.items())) + \
             '</tr>'
 
         player_data.append(
