@@ -16,8 +16,8 @@ tr_input_tmpl = \
              '</td>')
 tr_td_tmpl = Template('<td style="text-align:left"><div class="cell-content">$cells</div></td>')
 tr_td_comment_tmpl = Template(
-    '<td style="text-align:left"><div class="tooltip">$cell<span class="tooltiptext">$allcell' +
-    '</span></div></td>'
+    '<td style="text-align:left"><div class="tooltip">$cell<span class="tooltiptext"><pre>' +
+    '$allcell</pre></span></div></td>'
 )
 
 
