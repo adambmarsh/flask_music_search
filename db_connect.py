@@ -5,6 +5,7 @@ import re
 from collections import OrderedDict
 import psycopg2
 from settings import DATABASES
+from utils import log_it
 
 
 class DBConnection:
@@ -133,13 +134,13 @@ class DBConnection:
         except re.error:
             return False
 
-    def search(self, user_query, tables='*', columns='*'):
+    def search(self, user_query, tables='*', columns='*') -> list:
         """
         Run a db search.
         :param user_query: Text containing the search terms
         :param tables: DB table names to search, comma-separated, if None or '*', search all
         :param columns: DB columns to search, if None, use all columns, if None or '*' search all
-        :return: Results of the search
+        :return: Results of the search as a list or an empty list (in which case the exception is
         """
         where_operand = 'LIKE'
         pc_sign = '%'
@@ -169,9 +170,13 @@ class DBConnection:
                     f"SELECT {select_col_str} FROM {where_tables[0]} JOIN {where_tables[1]} on " +
                     f"{where_tables[1]}.album_id = {where_tables[0]}.id WHERE " +
                     f"{where_col_str} {where_operand} \'{pc_sign}{user_query}{pc_sign}\'"+
-                    "ORDER BY album.title DESC, song.track_id;")
+                    " ORDER BY album.title DESC, song.track_id;")
 
-        self.cur.execute(query_str)
+        try:
+            self.cur.execute(query_str)
+        except psycopg2.Error as er:
+            log_it("info", f"Error while executing query: {er}")
+            return []
 
         return self.cur.fetchall()
 
