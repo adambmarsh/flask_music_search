@@ -1,6 +1,7 @@
 """
 module provide utility function
 """
+import re
 import logging
 import os
 import sys
@@ -49,3 +50,23 @@ def read_yaml(f_path):
         log_it("debug", __name__, f"Bad yaml in {f_path}: {e}")
 
     return f_contents
+
+def is_re_pattern(in_str: str) -> bool:
+    """
+    Check if the received string is a valid regex pattern and not just piece of ordinary text.
+    :param in_str: String to test
+    :return: True if the string is a regex pattern, otherwise False
+    """
+    re_meta = set(".^$*+?{}[]|()")
+
+    if set(in_str).intersection(re_meta):
+        return True
+
+    if re.search(r"\\[dwsbDWSB]", in_str) or re.search(r"\{\d+(,\d*)?}", in_str):
+        return True
+
+    try:
+        re.compile(in_str)
+        return True
+    except re.error:
+        return False

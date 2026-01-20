@@ -5,7 +5,7 @@ import re
 from collections import OrderedDict
 import psycopg2
 from settings import DATABASES
-from utils import log_it
+from utils import is_re_pattern, log_it
 
 
 class DBConnection:
@@ -118,22 +118,6 @@ class DBConnection:
 
         return tables, where_columns
 
-    @staticmethod
-    def is_re_pattern(in_str):
-        """
-        Check if the received string is a valid regex pattern and not just piece of ordinary text.
-        :param in_str: String to test
-        :return: True if the string is a regex pattern, otherwise False
-        """
-        if re.fullmatch(r'[\w ]+', in_str):
-            return False
-
-        try:
-            re.compile(in_str)
-            return True
-        except re.error:
-            return False
-
     def search(self, user_query, tables='*', columns='*') -> list:
         """
         Run a db search.
@@ -145,7 +129,7 @@ class DBConnection:
         where_operand = 'LIKE'
         pc_sign = '%'
 
-        if user_query and self.is_re_pattern(user_query):
+        if user_query and is_re_pattern(user_query):
             where_operand = '~'
             pc_sign = ''
 
