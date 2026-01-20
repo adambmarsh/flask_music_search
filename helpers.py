@@ -2,12 +2,13 @@
 module defining help functions for flask-based db search
 """
 import urllib.parse
+import re
 from collections import OrderedDict
 from pathlib import Path
 from string import Template
 
 from settings import display_columns, play_cfg
-
+from utils import is_re_pattern
 
 tr_input_tmpl = \
     Template('<tr><td><input type = "button" value=" \u25B6 " '
@@ -75,16 +76,20 @@ def build_html(user_columns: list[str], db_columns: list[str], data: list[tuple]
 
     return {'records': len(data), 'html': html_string + '</table>','player_data': player_data}
 
-
-def mark_matches(term: str, in_string: str) -> str:
+def mark_matches(term: str, in_str: str) -> str:
     """
     Mark (highlight) the received term in the HTML string.
     :param term: term to mark
-    :param in_string: string in which to mark occurrences of term
+    :param in_str: string in which to mark occurrences of term
     :return: marked-up HTML string on success or unchanged in_string if no matches are found
     """
-    return in_string.replace(term, f"<mark>{term}</mark>")
+    if not is_re_pattern(term):
+        return in_str.replace(term, f"<mark>{term}</mark>")
 
+    for match in re.finditer(term, in_str):
+        in_str = in_str.replace(match.group(), f"<mark>{match.group()}</mark>")
+
+    return in_str
 
 def find_music_file(filename: str, audio_dir: str)-> Path|None:
     """
