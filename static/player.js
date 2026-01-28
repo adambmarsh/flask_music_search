@@ -18,10 +18,10 @@ export class Player {
         await this.player.play();
         let dataArray = this.playingRow.firstChild.children[1].value.split('||');
         let album = dataArray[0];
-        let artist = dataArray[1];
-        let date = dataArray[2];
+        let artist = dataArray[5];
+        let date = dataArray[3];
         date = date.slice(0,4);
-        let title = dataArray[3];
+        let title = dataArray[4];
         let displayString = `${album} || ${artist} || ${title} || (${date})`;
         displayString = displayString.replaceAll("_"," ");
         document.querySelector('#nowPlaying').innerHTML = displayString;
