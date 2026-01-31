@@ -15,16 +15,20 @@ export class Player {
 
     async play(){
         try{
-        await this.player.play();
-        let dataArray = this.playingRow.firstChild.children[1].value.split('||');
-        let album = dataArray[0];
-        let artist = dataArray[5];
-        let date = dataArray[3];
-        date = date.slice(0,4);
-        let title = dataArray[4];
-        let displayString = `${album} || ${artist} || ${title} || (${date})`;
-        displayString = displayString.replaceAll("_"," ");
-        document.querySelector('#nowPlaying').innerHTML = displayString;
+            await this.player.play();
+            let dataArray = this.playingRow.firstChild.children[1].value.split('||');
+            let album = (0 in dataArray && dataArray[0] != null) ? dataArray[0] : "";
+            let artist = (5 in dataArray && dataArray[5] != null) ? dataArray[5] : "";
+            let date = (3 in dataArray && dataArray[3] != null) ? dataArray[3] : "";
+            date = date != "" ? date.slice(0,4) : date;
+            let title = (4 in dataArray && dataArray[4] != null) ? dataArray[4] : "";
+            let displayString = '';
+            displayString += album != "" ? album : "";
+            displayString += artist != "" ? " || " + artist : "";
+            displayString += title != "" ? " || " + title : "";
+            displayString += date != "" ? " || (" + date + ")" : "";
+            displayString = displayString.replaceAll("_"," ");
+            document.querySelector('#nowPlaying').innerHTML = displayString;
         }
         catch (err){
         }
