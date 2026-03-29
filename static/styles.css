@@ -34,7 +34,7 @@ td{
 }
 .top-display{
  font-family: sans-serif;
- font-size: smaller;
+ font-size: small; 
  top: 0;
  background-color: var(--primary-background);
  color: var(--primary-text-color);
@@ -61,14 +61,22 @@ td {
     width: 300px;
 }
 
-.in_columns {
+.in_columns  {
     width: 300px;
+    font-size: medium;
 }
 
 .in_query {
     width: 300px;
+    font-size: medium;
 }
 
+.button {
+    font-weight: bold;
+    font-size: medium;
+    display: inline-block;
+    margin: 2 auto;
+}
 
 label {
     color: var(--primary-text-color);
@@ -77,17 +85,22 @@ label {
     margin-left: 12px;
     margin-top: 3px;
     float: left;
+    font-size: medium;        
 }
 
 label:after {
-    content: " "
+    content: " ";
+    font-size: medium;        
 }
 #player{
-width: 25%;
+    margin: 10px;
+    width: 25%;
 }
 #row_pointer{
-visibility: visible;
-color: var(--primary-text-color);
+    visibility: visible;
+    color: var(--primary-text-color);
+    font-size: medium;        
+
 }
 #floating-div{
 position: absolute;
