@@ -64,11 +64,13 @@ if [ -z "$port" ]; then
     port="5000"
 fi
 
-if [ -f "$HOME"/scripts/mount_video ]; then
-    "$HOME"/scripts/mount_video
-fi
+# Mount music share in fstab (edit /etc/fstab to add the line below):
+# //192.168.1.24/Multimedia/music/        /home/pi/lanmount/music cifs    username=admin,password=$ognuM,uid=1000,gid=1000        0 0
 
-"$HOME"/scripts/mount_music && "$HOME"/scripts/start-tailnet-books.sh
+# start tailnet books and tailnet music search in crontab ($ crontab -e and add
+# these lines):
+# @reboot /home/pi/scripts/start-tailnet-books.sh
+# @reboot /home/pi/scripts/start-tailnet-music-search.sh
 
 . "$activate_path" && cd "$run_dir" && gunicorn --workers 4 --timeout 240 --bind "$ip":"$port" app:app  && deactivate
 
